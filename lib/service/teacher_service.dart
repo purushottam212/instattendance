@@ -4,6 +4,7 @@ import 'package:instattendance/models/student.dart' as stud;
 import 'package:instattendance/models/subject.dart' as sub;
 import 'package:instattendance/models/teacher.dart';
 import 'package:instattendance/repository/teacher_repository.dart';
+import 'package:instattendance/utils/storage_util.dart';
 import 'package:instattendance/widgets/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,8 +16,13 @@ class TeacherService {
       Teacher? teacher =
           await _teacherRepository.authenticateTeacher(email, password);
       if (teacher != null) {
-        final SharedPreferences _prefs = await SharedPreferences.getInstance();
-        await _prefs.setBool('login', true);
+        final StorageUtil storage = StorageUtil.storageInstance;
+        if (storage.getPrefs('email')!.isEmpty &&
+            storage.getPrefs('password')!.isEmpty) {
+          storage.addStringtoSF('email', teacher.email!);
+          storage.addStringtoSF('password', teacher.password!);
+        }
+
         return teacher;
       }
     } catch (e) {

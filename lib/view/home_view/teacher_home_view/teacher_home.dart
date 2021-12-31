@@ -6,6 +6,7 @@ import 'package:instattendance/models/attendance.dart';
 import 'package:instattendance/models/dept_class.dart';
 import 'package:instattendance/models/division.dart';
 import 'package:instattendance/models/subject.dart' as sub;
+import 'package:instattendance/utils/storage_util.dart';
 import 'package:instattendance/view/authentication_view/authentication.dart';
 import 'package:instattendance/widgets/custom_button.dart';
 import 'package:instattendance/widgets/student_list.dart';
@@ -44,11 +45,10 @@ class _TeacherHomeState extends State<TeacherHome> {
     await getAllClasses();
     await getAllDivisions();
     if (this.mounted) {
-  setState(() {
-    // Your state change code goes here
-  });
-}
- 
+      setState(() {
+        // Your state change code goes here
+      });
+    }
   }
 
   getAllClasses() async {
@@ -65,6 +65,11 @@ class _TeacherHomeState extends State<TeacherHome> {
     } else {
       DisplayMessage.showClassNotSelected();
     }
+    if (this.mounted) {
+      setState(() {
+        // Your state change code goes here
+      });
+    }
   }
 
   @override
@@ -78,6 +83,9 @@ class _TeacherHomeState extends State<TeacherHome> {
           actions: [
             IconButton(
                 onPressed: () {
+                  StorageUtil storage = StorageUtil.storageInstance;
+                  storage.clearPrefs();
+
                   Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                           builder: (context) => AuthenticationView()),
@@ -106,16 +114,12 @@ class _TeacherHomeState extends State<TeacherHome> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey
-                                  .withOpacity(0.5), //color of shadow
+                              color: Colors.grey.withOpacity(0.5),
                               spreadRadius: 5, //spread radius
                               blurRadius: 7, // blur radius
                               offset: const Offset(
                                   0, 2), // changes position of shadow
-                              //first paramerter of offset is left-right
-                              //second parameter is top to down
                             ),
-                            //you can set more BoxShadow() here
                           ],
                         ),
                         child: Center(
@@ -143,10 +147,7 @@ class _TeacherHomeState extends State<TeacherHome> {
                                 blurRadius: 7, // blur radius
                                 offset: const Offset(
                                     0, 2), // changes position of shadow
-                                //first paramerter of offset is left-right
-                                //second parameter is top to down
                               ),
-                              //you can set more BoxShadow() here
                             ],
                           ),
                           child: Center(
@@ -238,12 +239,8 @@ class _TeacherHomeState extends State<TeacherHome> {
                                     .withOpacity(0.5), //color of shadow
                                 spreadRadius: 5, //spread radius
                                 blurRadius: 7, // blur radius
-                                offset: const Offset(
-                                    0, 2), // changes position of shadow
-                                //first paramerter of offset is left-right
-                                //second parameter is top to down
+                                offset: const Offset(0, 2),
                               ),
-                              //you can set more BoxShadow() here
                             ],
                           ),
                           child: Center(
@@ -336,9 +333,6 @@ class _TeacherHomeState extends State<TeacherHome> {
                 TextButton.icon(
                     onPressed: () async {
                       await getStudentsByClassAndDiv();
-                      setState(() {
-                        _showStudentList = true;
-                      });
                     },
                     icon: const Icon(Icons.done),
                     label: const Text('Submit')),
@@ -356,7 +350,11 @@ class _TeacherHomeState extends State<TeacherHome> {
                     msg: 'Submit Attendance',
                     icon: Icons.done,
                     onTap: () {
-                      submitAttendance();
+                      if (_teacherController.studentsByClassAndDiv.isNotEmpty) {
+                        submitAttendance();
+                      } else {
+                        DisplayMessage.showMsg('This Class has no Students!!');
+                      }
                     })
                 : Container()
           ]),
@@ -367,9 +365,14 @@ class _TeacherHomeState extends State<TeacherHome> {
     if (_selectedClass != null &&
         _selectedDivision != null &&
         _selectedSubject != null &&
-        timeController.text != null) {
+        timeController.text.isNotEmpty) {
       await _teacherController.getAllStudentsByClassAndDiv(
           _selectedClassId, _selectedDivId);
+      setState(() {
+        _showStudentList = true;
+      });
+    } else {
+      DisplayMessage.showMsg('All Fields Are Required');
     }
   }
 
@@ -394,7 +397,8 @@ class _TeacherHomeState extends State<TeacherHome> {
     Attendance? a = await _attendanceController.takeAttendance(attendance);
     if (a != null) {
       DisplayMessage.showSubmitted();
+    } else {
+      DisplayMessage.showMsg('Something goes wrong, try again');
     }
-    DisplayMessage.showSubmitted();
   }
 }

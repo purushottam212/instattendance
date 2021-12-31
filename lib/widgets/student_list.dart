@@ -6,11 +6,11 @@ import 'package:instattendance/models/student.dart';
 class StudentListView extends StatelessWidget {
   StudentListView({Key? key, required this.students}) : super(key: key);
   final List<Student> students;
-  static final columns = ["Sr.no", "Roll.no", "Student"];
+  //static final columns = ["Sr.no", "Roll.no", "Student"];
   final TeacherController _teacherController = Get.find();
 
-  List<DataColumn> getColumns(List<String> columns) =>
-      columns.map((String column) => DataColumn(label: Text(column))).toList();
+  /*List<DataColumn> getColumns(List<String> columns) =>
+      columns.map((String column) => DataColumn(label: Text(column))).toList();*/
 
   List<DataRow> getRows(List<Student> students) => students.map(
         (Student student) {

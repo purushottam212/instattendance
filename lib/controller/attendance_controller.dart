@@ -8,6 +8,7 @@ class AttendanceController extends GetxController {
   var attendance = Attendance().obs;
   Attendance? _attendance;
   var attendanceByTeacher = List<Attendance>.empty(growable: true).obs;
+  var loading = false.obs;
   //final TeacherController _teacherController = Get.find();
 
   /*@override
@@ -60,6 +61,8 @@ class AttendanceController extends GetxController {
   }
 
   Future<String> deleteattendance(int id) async {
+    
     return await _attendanceService.deleteAttendance(id);
+    
   }
 }

@@ -12,7 +12,7 @@ class AuthenticationView extends StatelessWidget {
   AuthenticationView({Key? key}) : super(key: key);
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TeacherController _teacherController = Get.put(TeacherController());
+  final TeacherController _teacherController = Get.find();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -65,6 +65,7 @@ class AuthenticationView extends StatelessWidget {
                         const BoxConstraints(maxWidth: 280.0, maxHeight: 55.0),
                     child: TextFormField(
                         controller: passwordController,
+                        obscureText: true,
                         decoration: InputDecoration(
                           labelText: "Enter Password",
                           fillColor: Colors.white,
@@ -84,7 +85,7 @@ class AuthenticationView extends StatelessWidget {
               icon: Icons.login,
               onTap: () {
                 isValidForm(context);
-              })
+              }),
         ])),
       ))),
     );
@@ -121,8 +122,7 @@ class AuthenticationView extends StatelessWidget {
         emailController.text, passwordController.text);
     if (teacher != null) {
       _teacherController.onSave();
-      final AttendanceController _attendanceController =
-          Get.put(AttendanceController());
+
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const BottomNavigation()),
           (Route<dynamic> route) => false);

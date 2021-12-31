@@ -14,13 +14,15 @@ class TeacherController extends GetxController {
   var presentStudents = List<String?>.empty().obs;
   var absentStudents = List<String?>.empty().obs;
   var teacher = Teacher().obs;
+  var isLoading = false.obs;
   Teacher? _t1;
 
   final TeacherService _teacherService = TeacherService();
 
   Future<Teacher?> authenticateTeacher(String email, String password) async {
+    isLoading(true);
     _t1 = await _teacherService.authenticateTeacher(email, password);
-
+    isLoading(false);
     return _t1;
   }
 
@@ -58,7 +60,6 @@ class TeacherController extends GetxController {
         await _teacherService.getStudentsByClassAndDiv(classId, divId);
 
     if (studentList != null) {
-    
       studentsByClassAndDiv.assignAll(studentList);
     }
   }
