@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/models/attendance.dart';
+
 import 'package:instattendance/repository/attendance_repository.dart';
 import 'package:instattendance/widgets/toast.dart';
 
@@ -32,7 +33,20 @@ class AttendanceService {
     return allAttendanceOfTeacher;
   }
 
+  Future<List<Attendance>?> getAttendanceByClassSubDiv(
+      String className, String div, String subject) async {
+    List<Attendance>? fetchAttendanceList = await _attendanceRepository
+        .getAttendanceBySubClassDiv(className, div, subject);
+    if (fetchAttendanceList!.isEmpty) {
+      DisplayMessage.showMsg('No Attendance record found');
+    } else {
+      return fetchAttendanceList;
+    }
+  }
+
   Future<String> deleteAttendance(int id) async {
     return await _attendanceRepository.deleteAttendance(id);
   }
+
+  
 }

@@ -51,4 +51,26 @@ class AttendanceRepository {
     }
     return "Error";
   }
+
+  Future<List<Attendance>?> getAttendanceBySubClassDiv(
+      String className, String div, String subject) async {
+    var body = {
+      "className": className,
+      "divisionName": div,
+      "subjectName": subject
+    };
+
+    var response = await http.post(
+      Uri.parse('${RepositoryConstants.baseUrl}/getAttendanceByClassSubDiv'),
+      body: jsonEncode(body),
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == RepositoryConstants.statusSuccessful) {
+      return attendanceListFromJson(response.body);
+    }
+    return null;
+  }
 }

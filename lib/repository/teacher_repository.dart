@@ -35,7 +35,7 @@ class TeacherRepository {
     );
 
     if (response.statusCode == RepositoryConstants.statusSuccessful) {
-      return deptClassFromJson(response.body);
+      return deptClassListFromJson(response.body);
     }
 
     return null;
@@ -57,8 +57,8 @@ class TeacherRepository {
   }
 
   Future<List<stud.Student>?> getStudentsByClassAndDiv(
-      int className, int divName) async {
-    var body = jsonEncode({"classId": className, "divId": divName});
+      int classId, int divId) async {
+    var body = jsonEncode({"classId": classId, "divId": divId});
     var response = await http.post(
       Uri.parse('${RepositoryConstants.baseUrl}/studentsByClassAndDiv'),
       body: body,
@@ -81,5 +81,21 @@ class TeacherRepository {
       return sub.subjectFromJson(response.body);
     }
     return null;
+  }
+
+  Future<DeptClass?> findClassByName(String className) async {
+    var response = await http.get(
+        Uri.parse('${RepositoryConstants.baseUrl}/findClassByName/$className'));
+    if (response.statusCode == RepositoryConstants.statusSuccessful) {
+      return deptClassFromJson(response.body);
+    }
+  }
+
+  Future<Division?> findDivByName(String divName) async {
+    var response = await http.get(Uri.parse(
+        '${RepositoryConstants.baseUrl}/findDivisionByName/$divName'));
+    if (response.statusCode == RepositoryConstants.statusSuccessful) {
+      return divisionFromJson(response.body);
+    }
   }
 }

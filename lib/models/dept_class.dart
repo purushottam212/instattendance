@@ -4,8 +4,10 @@
 
 import 'dart:convert';
 
-List<DeptClass> deptClassFromJson(String str) =>
+List<DeptClass> deptClassListFromJson(String str) =>
     List<DeptClass>.from(json.decode(str).map((x) => DeptClass.fromJson(x)));
+
+DeptClass deptClassFromJson(String str) => DeptClass.fromJson(json.decode(str));
 
 String deptClassToJson(List<DeptClass> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));

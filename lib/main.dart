@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instattendance/controller/attendance_controller.dart';
+import 'package:instattendance/controller/attendance_filter_controller.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/utils/storage_util.dart';
 import 'package:instattendance/view/authentication_view/authentication.dart';
@@ -20,6 +21,8 @@ class MyApp extends StatelessWidget {
   final TeacherController _teacherController = Get.put(TeacherController());
   final AttendanceController _attendanceController =
       Get.put(AttendanceController());
+  final AttendanceFilterController _attendanceFilterController =
+      Get.put(AttendanceFilterController());
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

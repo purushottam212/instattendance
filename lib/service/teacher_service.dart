@@ -26,7 +26,7 @@ class TeacherService {
         return teacher;
       }
     } catch (e) {
-      return DisplayMessage.showMsg('Faculty Not Found');
+      DisplayMessage.showMsg('Faculty Not Found');
     }
   }
 
@@ -34,12 +34,12 @@ class TeacherService {
     List<DeptClass>? classes = await _teacherRepository.getAllClasses();
 
     if (classes == null) {
-      return DisplayMessage.showSomethingWentWrong();
+      DisplayMessage.showSomethingWentWrong();
     } else if (classes.isEmpty) {
-      return DisplayMessage.showNotFound();
+      DisplayMessage.showNotFound();
+    } else {
+      return classes;
     }
-
-    return classes;
   }
 
   Future<List<Division>?> getAllDivision() async {
@@ -77,5 +77,19 @@ class TeacherService {
     }
 
     return subjects;
+  }
+
+  Future<DeptClass?> findClassByName(String name) async {
+    DeptClass? deptClass = await _teacherRepository.findClassByName(name);
+    if (deptClass != null) {
+      return deptClass;
+    }
+  }
+
+  Future<Division?> findDivisionByName(String name) async {
+    Division? division = await _teacherRepository.findDivByName(name);
+    if (division != null) {
+      return division;
+    }
   }
 }

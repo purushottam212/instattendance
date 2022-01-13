@@ -64,6 +64,11 @@ class TeacherController extends GetxController {
     }
   }
 
+  Future<DeptClass?> findClassByClassName(String name) async {
+    DeptClass? deptClass = await _teacherService.findClassByName(name);
+    return deptClass;
+  }
+
   getAbsentStudents() {
     for (var i = 0; i < studentsByClassAndDiv.length; i++) {
       if (!presentStudents.contains(studentsByClassAndDiv[i].rollNo)) {
