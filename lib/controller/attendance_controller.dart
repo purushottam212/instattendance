@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/models/attendance.dart';
@@ -17,8 +18,8 @@ class AttendanceController extends GetxController {
     super.onInit();
   }*/
 
-  Future<Attendance?> takeAttendance(Attendance attendanceDetails) async {
-    _attendance = await _attendanceService.takeAttendance(attendanceDetails);
+  Future<Attendance?> takeAttendance(Attendance attendanceDetails,BuildContext context) async {
+    _attendance = await _attendanceService.takeAttendance(attendanceDetails,context);
 
     return _attendance;
   }

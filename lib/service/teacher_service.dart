@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:instattendance/models/dept_class.dart';
 import 'package:instattendance/models/division.dart';
 import 'package:instattendance/models/student.dart' as stud;
@@ -6,12 +7,12 @@ import 'package:instattendance/models/teacher.dart';
 import 'package:instattendance/repository/teacher_repository.dart';
 import 'package:instattendance/utils/storage_util.dart';
 import 'package:instattendance/widgets/toast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherService {
   final TeacherRepository _teacherRepository = TeacherRepository();
 
-  Future<Teacher?> authenticateTeacher(String email, String password) async {
+  Future<Teacher?> authenticateTeacher(
+      String email, String password, BuildContext context) async {
     try {
       Teacher? teacher =
           await _teacherRepository.authenticateTeacher(email, password);
@@ -26,7 +27,7 @@ class TeacherService {
         return teacher;
       }
     } catch (e) {
-      DisplayMessage.showMsg('Faculty Not Found');
+      DisplayMessage.displayErrorMotionToast(context, 'Error', e.toString());
     }
   }
 

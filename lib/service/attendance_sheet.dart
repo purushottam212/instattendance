@@ -4,8 +4,12 @@ import 'package:instattendance/controller/teacher_controller.dart';
 
 class AttendanceSheet {
   static final TeacherController _teacherController = Get.find();
-  static const _spreadsheetId = '1rAxIE-wvA5BakT2-8XvedjF3LpOv5FOQTRXN7nBb0oU';
-
+  static const _spreadsheetIdBE =
+      '1rAxIE-wvA5BakT2-8XvedjF3LpOv5FOQTRXN7nBb0oU';
+  static const _spreadsheetIdTE =
+      '1FKSRm_LCQ-GZKmjXGWFtpJUctmW83JaZCNk-Tx2rOvs';
+  static const _spreadsheetIdSE =
+      '1PjpDYB5ulsmnxhvGhvBJao4SHcayQ7aEPXpi12cEYBo';
   static const _credentials = r'''{ 
   "type": "service_account",
   "project_id": "instattendance",
@@ -23,34 +27,49 @@ class AttendanceSheet {
   static final _gsheets = GSheets(_credentials);
 
   static Worksheet? _attendanceSheet;
-  static Future init(String className, String div, String sub) async {
-    final spreadsheet = await _gsheets.spreadsheet(_spreadsheetId);
+  static Future init(
+      String className, String div, String sub, int colNo) async {
+    var spreadsheet;
+    if (className == 'BE') {
+      spreadsheet = await _gsheets.spreadsheet(_spreadsheetIdBE);
+    } else if (className == 'TE') {
+      spreadsheet = await _gsheets.spreadsheet(_spreadsheetIdTE);
+    } else if (className == 'SE') {
+      spreadsheet = await _gsheets.spreadsheet(_spreadsheetIdSE);
+    }
+
     _attendanceSheet =
         await _getWorkSheet(spreadsheet, title: '$className-$div-$sub');
 
     if (_attendanceSheet != null) {
-      _attendanceSheet!.clear();
+      await _attendanceSheet!.clear();
     }
 
-    _attendanceSheet!.values.insertValue(
+    await _attendanceSheet!.values.insertValue(
         'Dr.D.Y.Patil Institute of Technology Pimpri,Pune',
         column: 5,
         row: 1);
 
-    _attendanceSheet!.values
+    await _attendanceSheet!.values
         .insertValue('Department of Computer Engineering', column: 5, row: 2);
 
-    _attendanceSheet!.values
+    await _attendanceSheet!.values
         .insertValue('$className computer $div division', column: 5, row: 3);
 
-    _attendanceSheet!.values.insertValue('Subject : $sub', column: 1, row: 4);
-    _attendanceSheet!.values.insertValue(
+    await _attendanceSheet!.values
+        .insertValue('Subject : $sub', column: 1, row: 4);
+    await _attendanceSheet!.values.insertValue(
         'Faculty :${_teacherController.teacher.value.name} ',
         column: 1,
         row: 5);
 
+    await _attendanceSheet!.values
+        .insertValue('Total presenti', column: colNo, row: 8);
+    await _attendanceSheet!.values
+        .insertValue('Avg presenti', column: colNo + 1, row: 8);
+
     final firstRow = ['SrNo', 'RollNo', 'Student Name'];
-    _attendanceSheet!.values.insertRow(8, firstRow);
+    await _attendanceSheet!.values.insertRow(8, firstRow);
   }
 
   static Future<Worksheet> _getWorkSheet(Spreadsheet spreadsheet,
@@ -62,10 +81,19 @@ class AttendanceSheet {
     }
   }
 
-  static Future insertDatesInColumn(int column, String date) async {
+  static Future insertDatesInColumn(
+    int column,
+    String date,
+  ) async {
     if (_attendanceSheet == null) return;
 
     await _attendanceSheet!.values.insertValue(date, column: column, row: 8);
+  }
+
+  static Future insertTitleInColumn(int column, String data) async {
+    if (_attendanceSheet == null) return;
+
+    await _attendanceSheet!.values.insertValue(data, column: column, row: 8);
   }
 
   static Future insertRows(List row, int rowNo) async {
@@ -75,7 +103,32 @@ class AttendanceSheet {
 
   static Future insertpresenti(String value, int colNo, int rowNo) async {
     if (_attendanceSheet == null) return;
-    await _attendanceSheet!.values
-        .insertValue(value, column: colNo, row: rowNo);
+    try {
+      await _attendanceSheet!.values
+          .insertValue(value, column: colNo, row: rowNo);
+    } catch (e) {
+      Future.delayed(const Duration(milliseconds: 1000));
+      await _attendanceSheet!.values
+          .insertValue(value, column: colNo, row: rowNo);
+    }
+  }
+
+  static Future insertTotalAvgpresenti(int value, int colNo, int rowNo) async {
+    if (_attendanceSheet == null) return;
+    try {
+      await _attendanceSheet!.values
+          .insertValue(value, column: colNo, row: rowNo);
+    } catch (e) {
+      Future.delayed(const Duration(milliseconds: 1000));
+      await _attendanceSheet!.values
+          .insertValue(value, column: colNo, row: rowNo);
+    }
+  }
+
+  static Future<String> getCellValue(int colNo, int rowNo) async {
+    if (_attendanceSheet == null) return '';
+    String res =
+        await _attendanceSheet!.values.value(column: colNo, row: rowNo);
+    return res;
   }
 }

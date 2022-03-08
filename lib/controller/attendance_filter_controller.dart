@@ -1,9 +1,11 @@
+import 'dart:collection';
+
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:instattendance/models/attendance.dart';
 import 'package:instattendance/models/dept_class.dart';
 import 'package:instattendance/models/division.dart';
 import 'package:instattendance/models/student.dart';
-
 import 'package:instattendance/models/subject.dart' as sub;
 import 'package:instattendance/service/attendance_service.dart';
 import 'package:instattendance/service/attendance_sheet.dart';
@@ -22,6 +24,7 @@ class AttendanceFilterController extends GetxController {
   var selectedSub = ''.obs;
   var classRadioButtonVal = 999.obs;
   var divRadioButtonVal = 999.obs;
+  var isLoading = false.obs;
 
   Future getSubjectsByClass(String className) async {
     var subList = await _teacherService.getSubjectsByClass(className);
@@ -41,7 +44,9 @@ class AttendanceFilterController extends GetxController {
     }
   }
 
-  Future fillAttendanceSheet(List<Attendance> data) async {
+  Future fillAttendanceSheet(
+      List<Attendance> data, BuildContext context) async {
+    isLoading(true);
     DeptClass? getClassByName =
         await _teacherService.findClassByName(selectedClassName.value);
 
@@ -55,40 +60,52 @@ class AttendanceFilterController extends GetxController {
       try {
         if (studentsByClassAndDiv != null && studentsByClassAndDiv.isNotEmpty) {
           await AttendanceSheet.init(selectedClassName.value,
-              selectedDivision.value, selectedSub.value);
+              selectedDivision.value, selectedSub.value, data.length + 4);
 
           int columnNo = 4;
           int rowNo = 9;
-
+          int totalPresentiColNo = 4 + data.length;
           int addStudentForSingleTime = 0;
+          LinkedHashMap map = LinkedHashMap<String, int>();
           for (var i = 0; i < data.length; i++) {
-            AttendanceSheet.insertDatesInColumn(columnNo,
+            await AttendanceSheet.insertDatesInColumn(columnNo,
                 DateFormat.yMEd('en_US').format(data[i].attendanceDate!));
             List<String> absentStudentList = data[i].absentStudents!.split(",");
+
             int tempRow = 9;
             for (var j = 0; j < studentsByClassAndDiv.length; j++) {
               bool isStudentAbsent =
                   absentStudentList.contains(studentsByClassAndDiv[j].rollNo);
+              map.putIfAbsent(studentsByClassAndDiv[j].rollNo, () => 0);
+              List row = [
+                '${j + 1}',
+                studentsByClassAndDiv[j].rollNo,
+                studentsByClassAndDiv[j].name,
+              ];
+              if (addStudentForSingleTime <= 0) {
+                await AttendanceSheet.insertRows(row, rowNo);
+              }
               if (isStudentAbsent) {
-                List row = [
-                  '${j + 1}',
-                  studentsByClassAndDiv[j].rollNo,
-                  studentsByClassAndDiv[j].name,
-                ];
-                if (addStudentForSingleTime <= 0) {
-                  AttendanceSheet.insertRows(row, rowNo);
-                }
-                AttendanceSheet.insertpresenti('A', columnNo, tempRow);
+                await AttendanceSheet.insertpresenti('A', columnNo, tempRow);
               } else {
-                List row = [
-                  '${j + 1}',
-                  studentsByClassAndDiv[j].rollNo,
-                  studentsByClassAndDiv[j].name,
-                ];
-                if (addStudentForSingleTime <= 0) {
-                  AttendanceSheet.insertRows(row, rowNo);
+                if (map.containsKey(studentsByClassAndDiv[j].rollNo)) {
+                  int val = map[studentsByClassAndDiv[j].rollNo];
+                  map.update(
+                      studentsByClassAndDiv[j].rollNo, (value) => val + 1);
                 }
               }
+
+              await AttendanceSheet.insertTotalAvgpresenti(
+                  map[studentsByClassAndDiv[j].rollNo],
+                  totalPresentiColNo,
+                  tempRow);
+
+              int attendancePercentage =
+                  ((map[studentsByClassAndDiv[j].rollNo] * 100) / data.length)
+                      .round();
+
+              await AttendanceSheet.insertTotalAvgpresenti(
+                  attendancePercentage, totalPresentiColNo + 1, tempRow);
 
               rowNo += 1;
               tempRow += 1;
@@ -97,10 +114,14 @@ class AttendanceFilterController extends GetxController {
             addStudentForSingleTime += 1;
           }
         }
+        isLoading(false);
 
-        DisplayMessage.showMsg('Report Generated Successfully');
+        DisplayMessage.displaySuccessMotionToast(
+            context, 'Success', 'Report Generated Successfully');
       } catch (e) {
-        DisplayMessage.showMsg('something went wrong .. try again');
+        isLoading(false);
+        DisplayMessage.displayErrorMotionToast(
+            context, 'Error', 'Cannot Generate Report , Try Again');
       }
     }
   }

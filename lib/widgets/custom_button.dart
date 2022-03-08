@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:instattendance/controller/attendance_filter_controller.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 
 class CustomButton extends StatelessWidget {
@@ -9,6 +10,7 @@ class CustomButton extends StatelessWidget {
   final String msg;
   final IconData icon;
   final TeacherController _teacherController = Get.find();
+  final AttendanceFilterController _attendanceFilterController = Get.find();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,7 +23,8 @@ class CustomButton extends StatelessWidget {
           padding: const EdgeInsets.all(0),
           child: Obx(() => Container(
                 alignment: Alignment.center,
-                child: _teacherController.isLoading.value
+                child: _teacherController.isLoading.value ||
+                        _attendanceFilterController.isLoading.value
                     ? const Center(
                         child: CircularProgressIndicator(
                         color: Colors.white,

@@ -1,11 +1,12 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:instattendance/constants/api_service_constants.dart';
 import 'package:instattendance/models/attendance.dart';
 
+
 class AttendanceRepository {
-  Future<Attendance?> takeAttendance(Attendance attendanceDeatils) async {
+  Future<Attendance?> takeAttendance(
+      Attendance attendanceDeatils) async {
     var body = jsonEncode({
       "attendanceDate": attendanceDeatils.attendanceDate!.toIso8601String(),
       "attendanceTime": attendanceDeatils.attendanceTime,
@@ -17,17 +18,20 @@ class AttendanceRepository {
       "absentStudents": attendanceDeatils.absentStudents
     });
 
-    var response = await http.post(
-      Uri.parse('${RepositoryConstants.baseUrl}/attendance'),
-      body: body,
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8',
-      },
-    );
+   
+      var response = await http.post(
+        Uri.parse('${RepositoryConstants.baseUrl}/attendance'),
+        body: body,
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8',
+        },
+      );
 
-    if (response.statusCode == RepositoryConstants.statusSuccessful) {
-      return attendanceFromJson(response.body);
-    }
+      if (response.statusCode == RepositoryConstants.statusSuccessful) {
+        return attendanceFromJson(response.body);
+      }
+     
+
     return null;
   }
 

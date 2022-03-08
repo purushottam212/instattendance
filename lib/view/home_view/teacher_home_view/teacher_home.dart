@@ -353,7 +353,8 @@ class _TeacherHomeState extends State<TeacherHome> {
                       if (_teacherController.studentsByClassAndDiv.isNotEmpty) {
                         submitAttendance();
                       } else {
-                        DisplayMessage.showMsg('This Class has no Students!!');
+                        DisplayMessage.displayInfoMotionToast(context, 'Info',
+                            'This Class does\'nt belongs to any students yet!!');
                       }
                     })
                 : Container()
@@ -372,7 +373,8 @@ class _TeacherHomeState extends State<TeacherHome> {
         _showStudentList = true;
       });
     } else {
-      DisplayMessage.showMsg('All Fields Are Required');
+      DisplayMessage.displayInfoMotionToast(
+          context, 'Info', 'All Fields Are Required!!');
     }
   }
 
@@ -394,11 +396,14 @@ class _TeacherHomeState extends State<TeacherHome> {
         presentStud,
         absentStud);
 
-    Attendance? a = await _attendanceController.takeAttendance(attendance);
+    Attendance? a =
+        await _attendanceController.takeAttendance(attendance, context);
     if (a != null) {
-      DisplayMessage.showSubmitted();
+      DisplayMessage.displaySuccessMotionToast(
+          context, 'Success', 'Great , Your Attendace is now Submitted!!');
     } else {
-      DisplayMessage.showMsg('Something goes wrong, try again');
+      DisplayMessage.displayErrorMotionToast(
+          context, 'Error', 'OOPS!! Something Went Wrong Try Again ');
     }
   }
 }

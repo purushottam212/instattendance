@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:instattendance/constants/gsheets_constans.dart';
 import 'package:instattendance/controller/attendance_controller.dart';
 import 'package:instattendance/controller/attendance_filter_controller.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
@@ -8,6 +9,7 @@ import 'package:instattendance/widgets/custom_button.dart';
 import 'package:instattendance/widgets/toast.dart';
 import 'package:intl/intl.dart';
 import 'package:instattendance/models/subject.dart' as sub;
+import 'package:url_launcher/url_launcher.dart';
 
 class ShowAttendance extends StatelessWidget {
   ShowAttendance({Key? key}) : super(key: key);
@@ -48,7 +50,8 @@ class ShowAttendance extends StatelessWidget {
                       ),
                     );
                   } else if (snapshot.hasError) {
-                    return DisplayMessage.showSomethingWentWrong();
+                    return DisplayMessage.displayErrorMotionToast(context,
+                        'Ooops', 'Something Goes Wrong!! Try Again.. ');
                   } else {
                     return snapshot.data == null
                         ? const Center(
@@ -105,7 +108,11 @@ class ShowAttendance extends StatelessWidget {
                                                                         index]
                                                                     .id!);
 
-                                                    DisplayMessage.showMsg(res);
+                                                    DisplayMessage
+                                                        .displayDeleteMotionToast(
+                                                            context,
+                                                            'Deleted',
+                                                            res);
                                                   },
                                                   icon: const Icon(Icons.delete,
                                                       color: Colors.black45,
@@ -121,12 +128,11 @@ class ShowAttendance extends StatelessWidget {
                                       _attendanceFilterController
                                           .selectedSub.value.isNotEmpty
                                   ? CustomButton(
-                                      onTap: () {
-                                      
-                                        _attendanceFilterController
+                                      onTap: () async {
+                                        await _attendanceFilterController
                                             .fillAttendanceSheet(
-                                                snapshot.data!);
-                                        
+                                                snapshot.data!, context);
+                                        //lauchSheet();
                                       },
                                       msg: 'Generate Report',
                                       icon: Icons.receipt_long_rounded)
@@ -137,6 +143,12 @@ class ShowAttendance extends StatelessWidget {
                 },
               ),
             )));
+  }
+
+  lauchSheet() async {
+    if (!await launch(GsheetConstants.sheetUrl)) {
+      throw DisplayMessage.showMsg('could not lauch report');
+    }
   }
 
   void _modalBottomSheetForFilters(BuildContext context) {

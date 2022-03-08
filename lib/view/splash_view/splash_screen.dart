@@ -49,7 +49,7 @@ class AppSplashScreen extends StatelessWidget {
     String? teacherEmail = storage.getPrefs('email');
     String? teacherPass = storage.getPrefs('password');
     Teacher? _teacher = await _teacherController.authenticateTeacher(
-        teacherEmail!, teacherPass!);
+        teacherEmail!, teacherPass!,context);
     if (_teacher != null) {
       _teacherController.onSave();
 

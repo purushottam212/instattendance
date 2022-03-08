@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:instattendance/models/dept_class.dart';
 import 'package:instattendance/models/division.dart';
@@ -19,9 +20,9 @@ class TeacherController extends GetxController {
 
   final TeacherService _teacherService = TeacherService();
 
-  Future<Teacher?> authenticateTeacher(String email, String password) async {
+  Future<Teacher?> authenticateTeacher(String email, String password,BuildContext context) async {
     isLoading(true);
-    _t1 = await _teacherService.authenticateTeacher(email, password);
+    _t1 = await _teacherService.authenticateTeacher(email, password,context);
     isLoading(false);
     return _t1;
   }

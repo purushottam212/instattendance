@@ -119,7 +119,7 @@ class AuthenticationView extends StatelessWidget {
 
   authenticateTeacher(BuildContext context) async {
     Teacher? teacher = await _teacherController.authenticateTeacher(
-        emailController.text, passwordController.text);
+        emailController.text, passwordController.text,context);
     if (teacher != null) {
       _teacherController.onSave();
 
