@@ -1,5 +1,4 @@
 import 'dart:collection';
-
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:instattendance/models/attendance.dart';
@@ -70,6 +69,7 @@ class AttendanceFilterController extends GetxController {
           for (var i = 0; i < data.length; i++) {
             await AttendanceSheet.insertDatesInColumn(columnNo,
                 DateFormat.yMEd('en_US').format(data[i].attendanceDate!));
+            await Future.delayed(Duration(seconds: 1));
             List<String> absentStudentList = data[i].absentStudents!.split(",");
 
             int tempRow = 9;
@@ -107,11 +107,14 @@ class AttendanceFilterController extends GetxController {
               await AttendanceSheet.insertTotalAvgpresenti(
                   attendancePercentage, totalPresentiColNo + 1, tempRow);
 
+              await Future.delayed(Duration(seconds: 1));
+
               rowNo += 1;
               tempRow += 1;
             }
             columnNo += 1;
             addStudentForSingleTime += 1;
+            await Future.delayed(Duration(seconds: 1));
           }
         }
         isLoading(false);
@@ -120,8 +123,8 @@ class AttendanceFilterController extends GetxController {
             context, 'Success', 'Report Generated Successfully');
       } catch (e) {
         isLoading(false);
-        DisplayMessage.displayErrorMotionToast(
-            context, 'Error', 'Cannot Generate Report , Try Again');
+        DisplayMessage.displayErrorMotionToast(context, 'Error', e.toString());
+        print(e.toString());
       }
     }
   }

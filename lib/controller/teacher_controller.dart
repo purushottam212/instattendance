@@ -14,15 +14,18 @@ class TeacherController extends GetxController {
   var studentsByClassAndDiv = List<stud.Student>.empty(growable: true).obs;
   var presentStudents = List<String?>.empty().obs;
   var absentStudents = List<String?>.empty().obs;
+  var practicalList = List<sub.Subject>.empty(growable: true).obs;
+  var studentsByBatch = List<stud.Student>.empty(growable: true).obs;
   var teacher = Teacher().obs;
   var isLoading = false.obs;
   Teacher? _t1;
 
   final TeacherService _teacherService = TeacherService();
 
-  Future<Teacher?> authenticateTeacher(String email, String password,BuildContext context) async {
+  Future<Teacher?> authenticateTeacher(
+      String email, String password, BuildContext context) async {
     isLoading(true);
-    _t1 = await _teacherService.authenticateTeacher(email, password,context);
+    _t1 = await _teacherService.authenticateTeacher(email, password, context);
     isLoading(false);
     return _t1;
   }
@@ -76,5 +79,34 @@ class TeacherController extends GetxController {
         absentStudents.add(studentsByClassAndDiv[i].rollNo);
       }
     }
+  }
+
+   getAbsentStudentsOfPracticalBatch() {
+    for (var i = 0; i < studentsByBatch.length; i++) {
+      if (!presentStudents.contains(studentsByBatch[i].rollNo)) {
+        absentStudents.add(studentsByBatch[i].rollNo);
+      }
+    }
+  }
+
+  Future<List<sub.Subject>?> getPracticalByClass(String className) async {
+    List<sub.Subject>? praList;
+    praList = await _teacherService.getPracicalsByClass(className);
+
+    if (praList != null) {
+      practicalList.assignAll(praList);
+    }
+  }
+
+  Future<List<stud.Student>?> getStudentsByBatch(String batchName) async {
+    List<stud.Student>? stList;
+
+    stList = await _teacherService.getStudentsByBatch(batchName);
+
+    if (stList != null) {
+      studentsByBatch.assignAll(stList);
+      return stList;
+    }
+    return null;
   }
 }

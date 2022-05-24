@@ -4,7 +4,9 @@ import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/helper/bottom_navigation/bottom_navigation.dart';
 import 'package:instattendance/models/teacher.dart';
 import 'package:instattendance/utils/storage_util.dart';
+import 'package:instattendance/view/authentication_view/authentication.dart';
 import 'package:instattendance/widgets/custom_heading_text.dart';
+import 'package:instattendance/widgets/toast.dart';
 
 class AppSplashScreen extends StatelessWidget {
   AppSplashScreen({Key? key}) : super(key: key);
@@ -49,12 +51,17 @@ class AppSplashScreen extends StatelessWidget {
     String? teacherEmail = storage.getPrefs('email');
     String? teacherPass = storage.getPrefs('password');
     Teacher? _teacher = await _teacherController.authenticateTeacher(
-        teacherEmail!, teacherPass!,context);
+        teacherEmail!, teacherPass!, context);
     if (_teacher != null) {
       _teacherController.onSave();
 
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const BottomNavigation()),
+          (Route<dynamic> route) => false);
+    } else {
+      DisplayMessage.showMsg('Teacher Not Found');
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => AuthenticationView()),
           (Route<dynamic> route) => false);
     }
   }

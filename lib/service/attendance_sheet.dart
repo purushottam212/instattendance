@@ -106,11 +106,7 @@ class AttendanceSheet {
     try {
       await _attendanceSheet!.values
           .insertValue(value, column: colNo, row: rowNo);
-    } catch (e) {
-      Future.delayed(const Duration(milliseconds: 1000));
-      await _attendanceSheet!.values
-          .insertValue(value, column: colNo, row: rowNo);
-    }
+    } catch (e) {}
   }
 
   static Future insertTotalAvgpresenti(int value, int colNo, int rowNo) async {
@@ -118,11 +114,7 @@ class AttendanceSheet {
     try {
       await _attendanceSheet!.values
           .insertValue(value, column: colNo, row: rowNo);
-    } catch (e) {
-      Future.delayed(const Duration(milliseconds: 1000));
-      await _attendanceSheet!.values
-          .insertValue(value, column: colNo, row: rowNo);
-    }
+    } catch (e) {}
   }
 
   static Future<String> getCellValue(int colNo, int rowNo) async {

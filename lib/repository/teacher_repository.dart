@@ -20,7 +20,8 @@ class TeacherRepository {
       },
     );
 
-    if (response.statusCode == RepositoryConstants.statusSuccessful) {
+    if (response.statusCode == RepositoryConstants.statusSuccessful &&
+        response.body.isNotEmpty) {
       return teacherFromJson(response.body);
     }
     return null;
@@ -98,4 +99,31 @@ class TeacherRepository {
       return divisionFromJson(response.body);
     }
   }
+
+  Future<List<sub.Subject>?> getAllPracticalsByClass(String className) async {
+    var response = await http.get(Uri.parse(
+        '${RepositoryConstants.baseUrl}/subjects/practical/$className'));
+
+    if (response.statusCode == RepositoryConstants.statusSuccessful) {
+      return sub.subjectFromJson(response.body);
+    }
+    return null;
+  }
+
+  Future<List<Student>?> getStudentsByBatch(String batchName) async {
+    var response = await http.get(
+      Uri.parse('${RepositoryConstants.baseUrl}/students/batch/$batchName'),
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == RepositoryConstants.statusSuccessful &&
+        response.body.isNotEmpty) {
+      return studentFromJson(response.body);
+    }
+    RepositoryConstants.validateErrorCodes(response.statusCode);
+    return null;
+  }
+
 }

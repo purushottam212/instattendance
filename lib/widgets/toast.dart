@@ -9,9 +9,8 @@ class DisplayMessage {
         msg: "Something went wrong", backgroundColor: Colors.red);
   }
 
-  static showNotFound() {
-    return Fluttertoast.showToast(
-        msg: "Not Found", backgroundColor: Colors.red);
+  static showNotFound(String msg) {
+    return Fluttertoast.showToast(msg: msg, backgroundColor: Colors.red);
   }
 
   static showClassNotSelected() {
@@ -60,6 +59,8 @@ class DisplayMessage {
       animationType: ANIMATION.fromLeft,
       position: MOTION_TOAST_POSITION.top,
       width: 300,
+      height: 300,
+      toastDuration: Duration(seconds: 5),
     ).show(context);
   }
 

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:instattendance/controller/attendance_controller.dart';
+import 'package:instattendance/controller/practical_batch_controller.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/models/attendance.dart';
 import 'package:instattendance/models/dept_class.dart';
 import 'package:instattendance/models/division.dart';
+import 'package:instattendance/models/practical_batch.dart';
 import 'package:instattendance/models/subject.dart' as sub;
 import 'package:instattendance/utils/storage_util.dart';
 import 'package:instattendance/view/authentication_view/authentication.dart';
+import 'package:instattendance/view/notification_view/notification_page.dart';
 import 'package:instattendance/widgets/custom_button.dart';
 import 'package:instattendance/widgets/student_list.dart';
 import 'package:instattendance/widgets/toast.dart';
-import 'package:intl/intl.dart';
 
 class TeacherHome extends StatefulWidget {
   const TeacherHome({Key? key}) : super(key: key);
@@ -23,16 +25,18 @@ class TeacherHome extends StatefulWidget {
 class _TeacherHomeState extends State<TeacherHome> {
   final TeacherController _teacherController = Get.find();
   final AttendanceController _attendanceController = Get.find();
-
+  final PracticalBatchController _practicalBatchController =
+      Get.put(PracticalBatchController());
   final TextEditingController timeController = TextEditingController();
   var now = DateTime.now();
 
   String? _selectedClass;
   String? _selectedDivision;
   String? _selectedSubject;
+  String? _selectedBatch;
 
   bool _showStudentList = false;
-
+  bool isSwitched = false;
   int _selectedClassId = 0;
   int _selectedDivId = 0;
   @override
@@ -44,6 +48,7 @@ class _TeacherHomeState extends State<TeacherHome> {
   callAllMethods() async {
     await getAllClasses();
     await getAllDivisions();
+
     if (this.mounted) {
       setState(() {
         // Your state change code goes here
@@ -61,13 +66,47 @@ class _TeacherHomeState extends State<TeacherHome> {
 
   getAllSubjects() async {
     if (_selectedClass != null) {
-      await _teacherController.getAllSubjectsByClass(_selectedClass.toString());
+      isSwitched
+          ? await _teacherController
+              .getPracticalByClass(_selectedClass.toString())
+          : await _teacherController
+              .getAllSubjectsByClass(_selectedClass.toString());
     } else {
       DisplayMessage.showClassNotSelected();
     }
     if (this.mounted) {
       setState(() {
         // Your state change code goes here
+      });
+    }
+  }
+
+  getAllPracticalBatches() async {
+    if (_selectedClass != null && _selectedDivision != null) {
+      await _practicalBatchController.getPracticalBatches(
+          _selectedClass.toString(), _selectedDivision.toString());
+    } else {
+      DisplayMessage.displayInfoMotionToast(
+          context, 'Required', 'Please Select Class & Div');
+    }
+    if (this.mounted) {
+      setState(() {
+        // Your state change code goes here
+      });
+    }
+  }
+
+  DateTime selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(DateTime.now().year),
+        lastDate: DateTime(DateTime.now().year + 1));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
       });
     }
   }
@@ -81,6 +120,14 @@ class _TeacherHomeState extends State<TeacherHome> {
           title: const Text('Take Attendance'),
           backgroundColor: Colors.indigoAccent,
           actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => const NotificationPage()),
+                  );
+                },
+                icon: const Icon(Icons.notifications_active_outlined)),
             IconButton(
                 onPressed: () {
                   StorageUtil storage = StorageUtil.storageInstance;
@@ -105,25 +152,31 @@ class _TeacherHomeState extends State<TeacherHome> {
                   child: Row(
                     children: [
                       // const Text('Date: '),
-                      Container(
-                        height: height * 0.07,
-                        width: width * 0.33,
-                        margin: const EdgeInsets.all(15.0),
-                        padding: const EdgeInsets.all(3.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 5, //spread radius
-                              blurRadius: 7, // blur radius
-                              offset: const Offset(
-                                  0, 2), // changes position of shadow
-                            ),
-                          ],
+                      GestureDetector(
+                        onTap: () {
+                          _selectDate(context);
+                        },
+                        child: Container(
+                          height: height * 0.07,
+                          width: width * 0.33,
+                          margin: const EdgeInsets.all(15.0),
+                          padding: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 5, //spread radius
+                                blurRadius: 7, // blur radius
+                                offset: const Offset(
+                                    0, 2), // changes position of shadow
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                              child: Text(
+                                  "${selectedDate.toLocal()}".split(' ')[0])),
                         ),
-                        child: Center(
-                            child: Text(DateFormat.yMEd('en_US').format(now))),
                       ),
                     ],
                   ),
@@ -279,60 +332,190 @@ class _TeacherHomeState extends State<TeacherHome> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 3),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Is It Practical?'),
+                Checkbox(
+                  value: isSwitched,
+                  onChanged: (bool? value) async {
+                    setState(() {
+                      isSwitched = value!;
+                    });
+                    await getAllSubjects();
+                    isSwitched ? await getAllPracticalBatches() : null;
+                    setState(() {});
+                  },
+                ),
+              ],
+            ), //Check
+            const SizedBox(height: 5),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // const Text('Subject:'),
-                Container(
-                    height: height * 0.07,
-                    width: width * 0.34,
-                    margin: const EdgeInsets.all(15.0),
-                    padding: const EdgeInsets.all(3.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5), //color of shadow
-                          spreadRadius: 5, //spread radius
-                          blurRadius: 7, // blur radius
-                          offset:
-                              const Offset(0, 2), // changes position of shadow
-                          //first paramerter of offset is left-right
-                          //second parameter is top to down
-                        ),
-                        //you can set more BoxShadow() here
-                      ],
+                Row(
+                  children: [
+                    Visibility(
+                      visible: !isSwitched ? true : false,
+                      child: Container(
+                          height: height * 0.07,
+                          width: width * 0.34,
+                          margin: const EdgeInsets.all(15.0),
+                          padding: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey
+                                    .withOpacity(0.5), //color of shadow
+                                spreadRadius: 5, //spread radius
+                                blurRadius: 7, // blur radius
+                                offset: const Offset(
+                                    0, 2), // changes position of shadow
+                                //first paramerter of offset is left-right
+                                //second parameter is top to down
+                              ),
+                              //you can set more BoxShadow() here
+                            ],
+                          ),
+                          child: Center(
+                            child: DropdownButton<sub.Subject>(
+                              hint: _selectedSubject == null
+                                  ? const Text('select subject',
+                                      style: TextStyle(fontSize: 12))
+                                  : Text(_selectedSubject.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black)),
+                              items: _teacherController.subjects.isEmpty
+                                  ? null
+                                  : _teacherController.subjects
+                                      .map((sub.Subject value) {
+                                      return DropdownMenuItem<sub.Subject>(
+                                        value: value,
+                                        child: Text(value.name.toString()),
+                                      );
+                                    }).toList(),
+                              onChanged: (subject) {
+                                setState(() {
+                                  _selectedSubject = subject!.name.toString();
+                                });
+                              },
+                            ),
+                          )),
                     ),
-                    child: Center(
-                      child: DropdownButton<sub.Subject>(
-                        hint: _selectedSubject == null
-                            ? const Text('select subject',
-                                style: TextStyle(fontSize: 12))
-                            : Text(_selectedSubject.toString(),
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
-                        items: _teacherController.subjects.isEmpty
-                            ? null
-                            : _teacherController.subjects
-                                .map((sub.Subject value) {
-                                return DropdownMenuItem<sub.Subject>(
-                                  value: value,
-                                  child: Text(value.name.toString()),
-                                );
-                              }).toList(),
-                        onChanged: (subject) {
-                          setState(() {
-                            _selectedSubject = subject!.name.toString();
-                          });
-                        },
-                      ),
-                    )),
+                    Visibility(
+                      visible: isSwitched ? true : false,
+                      child: Container(
+                          height: height * 0.07,
+                          width: width * 0.34,
+                          margin: const EdgeInsets.all(15.0),
+                          padding: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey
+                                    .withOpacity(0.5), //color of shadow
+                                spreadRadius: 5, //spread radius
+                                blurRadius: 7, // blur radius
+                                offset: const Offset(
+                                    0, 2), // changes position of shadow
+                                //first paramerter of offset is left-right
+                                //second parameter is top to down
+                              ),
+                              //you can set more BoxShadow() here
+                            ],
+                          ),
+                          child: Center(
+                            child: DropdownButton<sub.Subject>(
+                              hint: _selectedSubject == null
+                                  ? const Text('select practical',
+                                      style: TextStyle(fontSize: 12))
+                                  : Text(_selectedSubject.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black)),
+                              items: _teacherController.practicalList.isEmpty
+                                  ? null
+                                  : _teacherController.practicalList
+                                      .map((sub.Subject value) {
+                                      return DropdownMenuItem<sub.Subject>(
+                                        value: value,
+                                        child: Text(value.name.toString()),
+                                      );
+                                    }).toList(),
+                              onChanged: (batch) {
+                                setState(() {
+                                  _selectedSubject = batch!.name.toString();
+                                });
+                              },
+                            ),
+                          )),
+                    ),
+                    Visibility(
+                      visible: isSwitched,
+                      child: Container(
+                          height: height * 0.07,
+                          width: width * 0.34,
+                          margin: const EdgeInsets.all(15.0),
+                          padding: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey
+                                    .withOpacity(0.5), //color of shadow
+                                spreadRadius: 5, //spread radius
+                                blurRadius: 7, // blur radius
+                                offset: const Offset(
+                                    0, 2), // changes position of shadow
+                                //first paramerter of offset is left-right
+                                //second parameter is top to down
+                              ),
+                              //you can set more BoxShadow() here
+                            ],
+                          ),
+                          child: Center(
+                            child: DropdownButton<PracticalBatch>(
+                              hint: _selectedBatch == null
+                                  ? const Text('select batch',
+                                      style: TextStyle(fontSize: 12))
+                                  : Text(_selectedBatch.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black)),
+                              items: _practicalBatchController.batchList.isEmpty
+                                  ? null
+                                  : _practicalBatchController.batchList
+                                      .map((PracticalBatch value) {
+                                      return DropdownMenuItem<PracticalBatch>(
+                                        value: value,
+                                        child: Text(value.batchName.toString()),
+                                      );
+                                    }).toList(),
+                              onChanged: (batch) {
+                                setState(() {
+                                  _selectedBatch = batch!.batchName.toString();
+                                });
+                              },
+                            ),
+                          )),
+                    ),
+                  ],
+                ),
                 TextButton.icon(
                     onPressed: () async {
-                      await getStudentsByClassAndDiv();
+                      isSwitched
+                          ? await getStudentsByPracticalBatch()
+                          : await getStudentsByClassAndDiv();
+
+                      setState(() {});
                     },
                     icon: const Icon(Icons.done),
                     label: const Text('Submit')),
@@ -340,7 +523,9 @@ class _TeacherHomeState extends State<TeacherHome> {
             ),
             _showStudentList
                 ? StudentListView(
-                    students: _teacherController.studentsByClassAndDiv)
+                    students: isSwitched
+                        ? _teacherController.studentsByBatch
+                        : _teacherController.studentsByClassAndDiv)
                 : Container(),
             const SizedBox(
               height: 20,
@@ -350,8 +535,10 @@ class _TeacherHomeState extends State<TeacherHome> {
                     msg: 'Submit Attendance',
                     icon: Icons.done,
                     onTap: () {
-                      if (_teacherController.studentsByClassAndDiv.isNotEmpty) {
+                      if (_teacherController.studentsByClassAndDiv.isNotEmpty ||
+                          _teacherController.studentsByBatch.isNotEmpty) {
                         submitAttendance();
+                        setState(() {});
                       } else {
                         DisplayMessage.displayInfoMotionToast(context, 'Info',
                             'This Class does\'nt belongs to any students yet!!');
@@ -378,8 +565,27 @@ class _TeacherHomeState extends State<TeacherHome> {
     }
   }
 
+  getStudentsByPracticalBatch() async {
+    if (_selectedClass != null &&
+        _selectedDivision != null &&
+        _selectedSubject != null &&
+        timeController.text.isNotEmpty &&
+        _selectedBatch != null &&
+        selectedDate != null) {
+      await _teacherController.getStudentsByBatch(_selectedBatch.toString());
+      setState(() {
+        _showStudentList = true;
+      });
+    } else {
+      DisplayMessage.displayInfoMotionToast(
+          context, 'Info', 'All Fields Are Required!!');
+    }
+  }
+
   submitAttendance() async {
-    _teacherController.getAbsentStudents();
+    isSwitched
+        ? _teacherController.getAbsentStudentsOfPracticalBatch()
+        : _teacherController.getAbsentStudents();
     String presentStud = _teacherController.presentStudents.join(',');
     String absentStud = _teacherController.absentStudents.join(',');
 
@@ -401,9 +607,11 @@ class _TeacherHomeState extends State<TeacherHome> {
     if (a != null) {
       DisplayMessage.displaySuccessMotionToast(
           context, 'Success', 'Great , Your Attendace is now Submitted!!');
+      _teacherController.presentStudents.clear();
+      _teacherController.absentStudents.clear();
     } else {
       DisplayMessage.displayErrorMotionToast(
-          context, 'Error', 'OOPS!! Something Went Wrong Try Again ');
+          context, 'Error', 'OOPS!! Your Attendace is not submitted try again');
     }
   }
 }

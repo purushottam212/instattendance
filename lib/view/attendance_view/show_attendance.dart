@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:instattendance/constants/gsheets_constans.dart';
 import 'package:instattendance/controller/attendance_controller.dart';
 import 'package:instattendance/controller/attendance_filter_controller.dart';
 import 'package:instattendance/controller/teacher_controller.dart';
 import 'package:instattendance/models/attendance.dart';
+import 'package:instattendance/models/subject.dart' as sub;
 import 'package:instattendance/widgets/custom_button.dart';
 import 'package:instattendance/widgets/toast.dart';
-import 'package:intl/intl.dart';
-import 'package:instattendance/models/subject.dart' as sub;
-import 'package:url_launcher/url_launcher.dart';
 
 class ShowAttendance extends StatelessWidget {
   ShowAttendance({Key? key}) : super(key: key);
@@ -129,9 +129,10 @@ class ShowAttendance extends StatelessWidget {
                                           .selectedSub.value.isNotEmpty
                                   ? CustomButton(
                                       onTap: () async {
-                                        await _attendanceFilterController
+                                        /*await _attendanceFilterController
                                             .fillAttendanceSheet(
-                                                snapshot.data!, context);
+                                                snapshot.data!, context);*/
+
                                         //lauchSheet();
                                       },
                                       msg: 'Generate Report',
@@ -313,4 +314,7 @@ class ShowAttendance extends StatelessWidget {
         });
   }
 }
+
+
+
 /*  */

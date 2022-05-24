@@ -23,8 +23,10 @@ class TeacherService {
           storage.addStringtoSF('email', teacher.email!);
           storage.addStringtoSF('password', teacher.password!);
         }
-
         return teacher;
+      } else {
+        DisplayMessage.displayInfoMotionToast(
+            context, 'Credentials', 'Invalid email & password');
       }
     } catch (e) {
       DisplayMessage.displayErrorMotionToast(context, 'Error', e.toString());
@@ -37,7 +39,7 @@ class TeacherService {
     if (classes == null) {
       DisplayMessage.showSomethingWentWrong();
     } else if (classes.isEmpty) {
-      DisplayMessage.showNotFound();
+      DisplayMessage.showNotFound('class not Found');
     } else {
       return classes;
     }
@@ -47,9 +49,9 @@ class TeacherService {
     List<Division>? divisions = await _teacherRepository.getAllDivisions();
 
     if (divisions == null) {
-      return DisplayMessage.showSomethingWentWrong();
+      DisplayMessage.showSomethingWentWrong();
     } else if (divisions.isEmpty) {
-      return DisplayMessage.showNotFound();
+      DisplayMessage.showNotFound('Divisions Not Found');
     }
 
     return divisions;
@@ -72,9 +74,9 @@ class TeacherService {
         await _teacherRepository.getAllSubjectsByClass(className);
 
     if (subjects == null) {
-      return DisplayMessage.showSomethingWentWrong();
+      DisplayMessage.showSomethingWentWrong();
     } else if (subjects.isEmpty) {
-      return DisplayMessage.showNotFound();
+      DisplayMessage.showNotFound('Subject Not Found');
     }
 
     return subjects;
@@ -91,6 +93,25 @@ class TeacherService {
     Division? division = await _teacherRepository.findDivByName(name);
     if (division != null) {
       return division;
+    }
+  }
+
+  Future<List<sub.Subject>?> getPracicalsByClass(String className) async {
+    if (className != null) {
+      try {
+        return await _teacherRepository.getAllPracticalsByClass(className);
+      } catch (e) {
+        DisplayMessage.showMsg(e.toString());
+      }
+    }
+    return null;
+  }
+
+  Future<List<stud.Student>?> getStudentsByBatch(String batchName) async {
+    try {
+      return await _teacherRepository.getStudentsByBatch(batchName);
+    } catch (e) {
+      DisplayMessage.showMsg(e.toString());
     }
   }
 }

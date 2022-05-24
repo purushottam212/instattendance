@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:instattendance/controller/attendance_controller.dart';
 import 'package:instattendance/view/attendance_view/show_attendance.dart';
 import 'package:instattendance/view/home_view/teacher_home_view/teacher_home.dart';
+import 'package:instattendance/view/offline_attendace_notepad/page/notes_page.dart';
 
 class BottomNavigation extends StatefulWidget {
   const BottomNavigation({Key? key}) : super(key: key);
@@ -26,6 +27,10 @@ class _BottomNavigationState extends State<BottomNavigation> {
             label: 'Take Attendance',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.offline_bolt),
+            label: 'Offline Attendance',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.note_alt),
             label: 'attendance record',
           ),
@@ -37,7 +42,11 @@ class _BottomNavigationState extends State<BottomNavigation> {
     );
   }
 
-  final List<Widget> _pages = <Widget>[const TeacherHome(), ShowAttendance()];
+  final List<Widget> _pages = <Widget>[
+    const TeacherHome(),
+    NotesPage(),
+    ShowAttendance()
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
