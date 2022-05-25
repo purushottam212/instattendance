@@ -28,7 +28,7 @@ class AttendanceSheet {
 
   static Worksheet? _attendanceSheet;
   static Future init(
-      String className, String div, String sub, int colNo) async {
+      String className, String div, String sub, String batch, int colNo) async {
     var spreadsheet;
     if (className == 'BE') {
       spreadsheet = await _gsheets.spreadsheet(_spreadsheetIdBE);
@@ -56,8 +56,10 @@ class AttendanceSheet {
     await _attendanceSheet!.values
         .insertValue('$className computer $div division', column: 5, row: 3);
 
-    await _attendanceSheet!.values
-        .insertValue('Subject : $sub', column: 1, row: 4);
+    await _attendanceSheet!.values.insertValue(
+        'Subject : $sub  Batch : ${batch == null ? '' : batch}',
+        column: 1,
+        row: 4);
     await _attendanceSheet!.values.insertValue(
         'Faculty :${_teacherController.teacher.value.name} ',
         column: 1,

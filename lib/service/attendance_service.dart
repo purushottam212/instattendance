@@ -36,7 +36,18 @@ class AttendanceService {
       String className, String div, String subject) async {
     List<Attendance>? fetchAttendanceList = await _attendanceRepository
         .getAttendanceBySubClassDiv(className, div, subject);
-    if (fetchAttendanceList!.isEmpty) {
+    if (fetchAttendanceList == null) {
+      DisplayMessage.showMsg('No Attendance record found');
+    } else {
+      return fetchAttendanceList;
+    }
+  }
+
+  Future<List<Attendance>?> getAttendanceByClassSubDivBatch(
+      String className, String div, String subject, String batchName) async {
+    List<Attendance>? fetchAttendanceList = await _attendanceRepository
+        .getAttendanceBySubClassDivBatch(className, div, subject, batchName);
+    if (fetchAttendanceList == null ) {
       DisplayMessage.showMsg('No Attendance record found');
     } else {
       return fetchAttendanceList;

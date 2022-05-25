@@ -13,8 +13,10 @@ class PracticalBatchService {
           .getBatchesByClassAndDiv(className, divName);
       if (pList != null) {
         return pList;
-      } else {
+      } else if (pList!.isEmpty) {
         DisplayMessage.showMsg('Batches Not Found');
+      } else {
+        DisplayMessage.showMsg('unable to fetch batches');
       }
     } catch (e) {
       DisplayMessage.showMsg(e.toString());

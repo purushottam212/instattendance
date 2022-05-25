@@ -51,6 +51,7 @@ class TeacherController extends GetxController {
 
   Future getAllSubjectsByClass(String className) async {
     var subjectList = await _teacherService.getSubjectsByClass(className);
+    subjects.clear();
 
     if (subjectList != null) {
       subjects.assignAll(subjectList);
@@ -81,7 +82,7 @@ class TeacherController extends GetxController {
     }
   }
 
-   getAbsentStudentsOfPracticalBatch() {
+  getAbsentStudentsOfPracticalBatch() {
     for (var i = 0; i < studentsByBatch.length; i++) {
       if (!presentStudents.contains(studentsByBatch[i].rollNo)) {
         absentStudents.add(studentsByBatch[i].rollNo);
@@ -91,6 +92,7 @@ class TeacherController extends GetxController {
 
   Future<List<sub.Subject>?> getPracticalByClass(String className) async {
     List<sub.Subject>? praList;
+    practicalList.clear();
     praList = await _teacherService.getPracicalsByClass(className);
 
     if (praList != null) {

@@ -2,7 +2,6 @@ import 'package:instattendance/view/offline_attendace_notepad/model/note.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-
 class NotesDatabase {
   static final NotesDatabase instance = NotesDatabase._init();
 
@@ -30,7 +29,8 @@ class NotesDatabase {
     const boolType = 'BOOLEAN NOT NULL';
     const integerType = 'INTEGER NOT NULL';
 
-    await db.execute('''
+    await db.execute(
+        '''
 CREATE TABLE $tableNotes ( 
   ${NoteFields.id} $idType, 
   ${NoteFields.isImportant} $boolType,
@@ -109,7 +109,7 @@ CREATE TABLE $tableNotes (
 
   Future close() async {
     final db = await instance.database;
-
+    _database = null;
     db.close();
   }
 }

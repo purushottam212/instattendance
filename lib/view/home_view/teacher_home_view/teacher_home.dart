@@ -260,14 +260,18 @@ class _TeacherHomeState extends State<TeacherHome> {
                                       child: Text(value.className.toString()),
                                     );
                                   }).toList(),
-                            onChanged: (deptClass) {
+                            onChanged: (deptClass) async {
                               setState(() {
                                 _selectedClass =
                                     deptClass!.className.toString();
                                 _selectedClassId = deptClass.id!;
                                 _selectedSubject = null;
-                                getAllSubjects();
                               });
+                              if (_selectedClass != null &&
+                                  _selectedDivision != null) {
+                                await getAllPracticalBatches();
+                              }
+                              await getAllSubjects();
                             },
                           ),
                         ),
@@ -318,12 +322,16 @@ class _TeacherHomeState extends State<TeacherHome> {
                                             Text(value.divisionName.toString()),
                                       );
                                     }).toList(),
-                              onChanged: (division) {
+                              onChanged: (division) async {
                                 setState(() {
                                   _selectedDivision =
                                       division!.divisionName.toString();
                                   _selectedDivId = division.id!;
                                 });
+                                if (_selectedClass != null &&
+                                    _selectedDivision != null) {
+                                  await getAllPracticalBatches();
+                                }
                               },
                             ),
                           )),
@@ -449,9 +457,9 @@ class _TeacherHomeState extends State<TeacherHome> {
                                         child: Text(value.name.toString()),
                                       );
                                     }).toList(),
-                              onChanged: (batch) {
+                              onChanged: (subject) {
                                 setState(() {
-                                  _selectedSubject = batch!.name.toString();
+                                  _selectedSubject = subject!.name.toString();
                                 });
                               },
                             ),

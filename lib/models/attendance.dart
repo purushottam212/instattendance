@@ -22,6 +22,7 @@ class Attendance {
     this.divisionName,
     this.faculty,
     this.subject,
+    this.batchName,
     this.presentStudents,
     this.absentStudents,
   });
@@ -33,20 +34,21 @@ class Attendance {
   String? divisionName;
   String? faculty;
   String? subject;
+  String? batchName;
   String? presentStudents;
   String? absentStudents;
 
   factory Attendance.fromJson(Map<String, dynamic> json) => Attendance(
-        id: json["id"],
-        attendanceDate: DateTime.parse(json["attendanceDate"]),
-        attendanceTime: json["attendanceTime"],
-        className: json["className"],
-        divisionName: json["divisionName"],
-        faculty: json["faculty"],
-        subject: json["subject"],
-        presentStudents: json["presentStudents"],
-        absentStudents: json["absentStudents"],
-      );
+      id: json["id"],
+      attendanceDate: DateTime.parse(json["attendanceDate"]),
+      attendanceTime: json["attendanceTime"],
+      className: json["className"],
+      divisionName: json["divisionName"],
+      faculty: json["faculty"],
+      subject: json["subject"],
+      presentStudents: json["presentStudents"],
+      absentStudents: json["absentStudents"],
+      batchName: json["batchName"]);
 
   Map<String, dynamic> toJson() => {
         "id": id,
@@ -58,5 +60,6 @@ class Attendance {
         "subject": subject,
         "presentStudents": presentStudents,
         "absentStudents": absentStudents,
+        "batchName": batchName
       };
 }

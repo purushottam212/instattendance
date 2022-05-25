@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:instattendance/models/practical_batch.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:instattendance/constants/gsheets_constans.dart';
@@ -35,13 +36,31 @@ class ShowAttendance extends StatelessWidget {
                             .selectedClassName.value.isNotEmpty &&
                         _attendanceFilterController
                             .selectedDivision.value.isNotEmpty &&
-                        _attendanceFilterController.selectedSub.value.isNotEmpty
+                        _attendanceFilterController
+                            .selectedSub.value.isNotEmpty &&
+                        _attendanceFilterController.selectedBatch.value.isEmpty
                     ? _attendanceFilterController.getAttendanceByClassSubDiv(
                         _attendanceFilterController.selectedClassName.value,
                         _attendanceFilterController.selectedDivision.value,
-                        _attendanceFilterController.selectedSub.value)
-                    : _attendanceController.getAttendanceByTeacher(
-                        _teacherController.teacher.value.name),
+                        _attendanceFilterController.selectedSub.value,
+                      )
+                    : _attendanceFilterController.selectedClassName.value.isNotEmpty &&
+                            _attendanceFilterController
+                                .selectedDivision.value.isNotEmpty &&
+                            _attendanceFilterController
+                                .selectedSub.value.isNotEmpty &&
+                            _attendanceFilterController
+                                .selectedBatch.value.isNotEmpty
+                        ? _attendanceFilterController
+                            .getAttendanceByClassSubDivBatch(
+                                _attendanceFilterController
+                                    .selectedClassName.value,
+                                _attendanceFilterController
+                                    .selectedDivision.value,
+                                _attendanceFilterController.selectedSub.value,
+                                _attendanceFilterController.selectedBatch.value)
+                        : _attendanceController.getAttendanceByTeacher(
+                            _teacherController.teacher.value.name),
                 builder: (context, AsyncSnapshot<List<Attendance>?> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -88,6 +107,13 @@ class ShowAttendance extends StatelessWidget {
                                                   'Subject: ${snapshot.data![index].subject}'),
                                             ],
                                           ),
+                                          snapshot.data![index].batchName ==
+                                                  null
+                                              ? Container()
+                                              : Text(
+                                                  'Batch : ${snapshot.data![index].batchName}',
+                                                  textAlign: TextAlign.center,
+                                                ),
                                           const SizedBox(height: 12),
                                           Column(
                                             children: [
@@ -129,9 +155,13 @@ class ShowAttendance extends StatelessWidget {
                                           .selectedSub.value.isNotEmpty
                                   ? CustomButton(
                                       onTap: () async {
-                                        /*await _attendanceFilterController
+                                        _attendanceFilterController
+                                            .isLoading(true);
+                                        await _attendanceFilterController
                                             .fillAttendanceSheet(
-                                                snapshot.data!, context);*/
+                                                snapshot.data!, context);
+                                        _attendanceFilterController
+                                            .isLoading(false);
 
                                         //lauchSheet();
                                       },
@@ -181,6 +211,7 @@ class ShowAttendance extends StatelessWidget {
                                     .divRadioButtonVal(999);
                                 _attendanceFilterController
                                     .classRadioButtonVal(999);
+                                _attendanceFilterController.selectedBatch('');
                                 Navigator.of(context).pop();
                               },
                               child: const Text('clear filters',
@@ -260,55 +291,117 @@ class ShowAttendance extends StatelessWidget {
                                   ))),
                       const SizedBox(height: 18),
 
-                      const Text('Select Subject'),
+                      const Text('Select Subject & Batch'),
                       const SizedBox(height: 12),
 
-                      Container(
-                          height: height * 0.05,
-                          width: width * 0.3,
-                          margin: const EdgeInsets.all(15.0),
-                          padding: const EdgeInsets.all(3.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 5,
-                                blurRadius: 7,
-                                offset: const Offset(0, 2),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                              height: height * 0.067,
+                              width: width * 0.34,
+                              margin: const EdgeInsets.all(15.0),
+                              padding: const EdgeInsets.all(3.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 5,
+                                    blurRadius: 7,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Center(
-                            child: DropdownButton<sub.Subject>(
-                              hint: _attendanceFilterController
-                                      .selectedSub.value.isEmpty
-                                  ? const Text('select subject',
-                                      style: TextStyle(fontSize: 12))
-                                  : Text(
-                                      _attendanceFilterController
-                                          .selectedSub.value
-                                          .toString(),
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black)),
-                              items: _attendanceFilterController
-                                      .subjectsByclass.isEmpty
-                                  ? null
-                                  : _attendanceFilterController.subjectsByclass
-                                      .map((sub.Subject value) {
-                                      return DropdownMenuItem<sub.Subject>(
-                                        value: value,
-                                        child: Text(value.name.toString()),
-                                      );
-                                    }).toList(),
-                              onChanged: (subject) {
-                                _attendanceFilterController
-                                    .selectedSub(subject!.name.toString());
-                              },
-                            ),
-                          )),
+                              child: Center(
+                                child: DropdownButton<sub.Subject>(
+                                  hint: _attendanceFilterController
+                                          .selectedSub.value.isEmpty
+                                      ? const Text('select subject',
+                                          style: TextStyle(fontSize: 12))
+                                      : Text(
+                                          _attendanceFilterController
+                                              .selectedSub.value
+                                              .toString(),
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black)),
+                                  items: _attendanceFilterController
+                                          .subjectsByclass.isEmpty
+                                      ? null
+                                      : _attendanceFilterController
+                                          .subjectsByclass
+                                          .map((sub.Subject value) {
+                                          return DropdownMenuItem<sub.Subject>(
+                                            value: value,
+                                            child: Text(value.name.toString()),
+                                          );
+                                        }).toList(),
+                                  onChanged: (subject) async {
+                                    _attendanceFilterController
+                                        .selectedSub(subject!.name.toString());
+                                    await _attendanceFilterController
+                                        .getAllPracticalBatches();
+                                  },
+                                ),
+                              )),
+                          Container(
+                              height: height * 0.07,
+                              width: width * 0.34,
+                              margin: const EdgeInsets.all(15.0),
+                              padding: const EdgeInsets.all(3.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey
+                                        .withOpacity(0.5), //color of shadow
+                                    spreadRadius: 5, //spread radius
+                                    blurRadius: 7, // blur radius
+                                    offset: const Offset(
+                                        0, 2), // changes position of shadow
+                                    //first paramerter of offset is left-right
+                                    //second parameter is top to down
+                                  ),
+                                  //you can set more BoxShadow() here
+                                ],
+                              ),
+                              child: Center(
+                                child: DropdownButton<PracticalBatch>(
+                                  hint: _attendanceFilterController
+                                          .selectedBatch.value.isEmpty
+                                      ? const Text('select batch',
+                                          style: TextStyle(fontSize: 12))
+                                      : Text(
+                                          _attendanceFilterController
+                                              .selectedBatch.value
+                                              .toString(),
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black)),
+                                  items: _attendanceFilterController
+                                          .practicalBatch.isEmpty
+                                      ? null
+                                      : _attendanceFilterController
+                                          .practicalBatch
+                                          .map((PracticalBatch value) {
+                                          return DropdownMenuItem<
+                                              PracticalBatch>(
+                                            value: value,
+                                            child: Text(
+                                                value.batchName.toString()),
+                                          );
+                                        }).toList(),
+                                  onChanged: (batch) {
+                                    _attendanceFilterController.selectedBatch(
+                                        batch!.batchName.toString());
+                                  },
+                                ),
+                              )),
+                        ],
+                      ),
                     ])),
               ));
         });
