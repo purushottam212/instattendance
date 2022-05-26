@@ -79,8 +79,9 @@ class _NotificationPageState extends State<NotificationPage> {
                       itemBuilder: (context, index) {
                         return ExpansionTile(
                           childrenPadding: const EdgeInsets.all(12),
-                          title: Text(
-                              "${_notificationController.notificationsList[index].date}"),
+                          title: Text(DateFormat('yyyy-MM-dd – kk:mm aa')
+                              .format(_notificationController
+                                  .notificationsList[index].date!)),
                           children: [
                             Text(
                                 "send by :  ${_notificationController.notificationsList[index].teacher}"),

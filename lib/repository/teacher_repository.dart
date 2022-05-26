@@ -125,5 +125,4 @@ class TeacherRepository {
     RepositoryConstants.validateErrorCodes(response.statusCode);
     return null;
   }
-
 }
